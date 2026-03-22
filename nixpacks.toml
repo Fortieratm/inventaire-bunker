@@ -1,1 +1,5 @@
-providers = ["staticfile"]
+[phases.setup]
+nixPkgs = ["nginx"]
+
+[start]
+cmd = "cp /app/index.html /var/www/html/index.html && nginx -g 'daemon off;'"
