@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Inventaire Alcools">
+<title>Inventaire Alcools</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;
+  --bd:#30363d;--bd2:#484f58;
+  --tx:#e6edf3;--tx2:#8b949e;--tx3:#6e7681;
+  --green2:#2ea043;--blueT:#1f6feb22;
+  --red:#da3633;--redT:#da363322;
+  --yellow:#d29922;--yellowT:#d2992222;
+  --purpleT:#8957e522;--orange:#e3722b;--orangeT:#e3722b22;
+  --mono:'JetBrains Mono','Fira Code','Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:13px}
+.shell{max-width:1140px;margin:16px auto;background:var(--bg);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--bd);padding:9px 16px;display:flex;align-items:center;gap:10px}
+.dots{display:flex;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}
+.topbar-title{flex:1;text-align:center;font-size:12px;color:var(--tx2);font-family:var(--mono)}
+.branch{font-size:11px;color:var(--tx3);font-family:var(--mono);background:var(--bg3);border:1px solid var(--bd);border-radius:4px;padding:2px 8px}
+.nav{display:flex;border-bottom:1px solid var(--bd);background:var(--bg2);overflow-x:auto}
+.navbtn{padding:9px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--tx2);font-size:12px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:color .15s}
+.navbtn:hover{color:var(--tx);background:var(--bg3)}
+.navbtn.active{color:var(--tx)}
+.navbtn.active.t-saq{border-bottom-color:#1f6feb}
+.navbtn.active.t-beer{border-bottom-color:#8957e5}
+.navbtn.active.t-inv{border-bottom-color:#2ea043}
+.navbtn.active.t-cmd{border-bottom-color:#e3722b}
+.cnt{border-radius:10px;padding:1px 7px;font-size:10px}
+.content{padding:14px;background:var(--bg)}
+.section{display:none}.section.on{display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:13px}
+.metric{background:var(--bg2);border:1px solid var(--bd);border-radius:6px;padding:9px 12px}
+.metric-label{font-size:11px;color:var(--tx2);margin-bottom:3px;font-family:var(--mono)}
+.metric-val{font-size:19px;font-weight:500;font-family:var(--mono)}
+.cv-blue{color:#79c0ff}.cv-green{color:#3fb950}.cv-yellow{color:#d29922}.cv-red{color:#f85149}
+.panel{background:var(--bg2);border:1px solid var(--bd);border-radius:6px;margin-bottom:11px;overflow:hidden}
+.panel-hdr{padding:8px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);background:var(--bg3)}
+.panel-title{font-size:12px;font-weight:500;font-family:var(--mono);color:var(--tx2)}
+.prompt-row{display:flex;align-items:center;gap:5px;padding:8px 13px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.ps-sym{color:#3fb950;font-family:var(--mono);font-size:12px;flex-shrink:0}
+.prompt-row input,.prompt-row select{background:transparent;border:none;outline:none;color:var(--tx);font-family:var(--mono);font-size:12px}
+.prompt-row select option{background:var(--bg3)}
+.ps{color:var(--bd2);font-size:10px}
+.cmd-btn{background:var(--green2);border:none;color:#fff;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;flex-shrink:0}
+.cmd-btn:hover{opacity:.8}
+.search-bar{display:flex;gap:6px;padding:7px 13px;border-bottom:1px solid var(--bd);background:var(--bg2)}
+.search-bar input,.search-bar select{background:var(--bg3);border:1px solid var(--bd);border-radius:5px;color:var(--tx);font-family:var(--mono);font-size:11px;padding:4px 8px;flex:1}
+.search-bar input:focus,.search-bar select:focus{outline:none;border-color:#1f6feb}
+.tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+.tbl th{padding:5px 10px;text-align:left;color:var(--tx2);font-weight:400;border-bottom:1px solid var(--bd);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.tbl td{padding:7px 10px;border-bottom:1px solid var(--bd);color:var(--tx);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.badge{display:inline-block;padding:2px 7px;border-radius:12px;font-size:10px;font-family:var(--mono);font-weight:500}
+.b-ok{background:#1f6feb22;color:#3fb950;border:1px solid #238636}
+.b-low{background:var(--yellowT);color:#d29922;border:1px solid #d29922}
+.b-out{background:var(--redT);color:#f85149;border:1px solid #da3633}
+.b-cat{background:var(--blueT);color:#79c0ff;border:1px solid #1f6feb}
+.b-type{background:var(--purpleT);color:#d2a8ff;border:1px solid #8957e5}
+.qty-ctrl{display:flex;align-items:center;gap:3px}
+.qbtn{background:var(--bg3);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;width:19px;height:19px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.qbtn:hover{background:var(--bg4)}
+.qval{min-width:26px;text-align:center;font-size:12px}
+.del-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;padding:1px 4px;border-radius:3px}
+.del-btn:hover{background:var(--redT);color:#f85149}
+.add-to-order{background:none;border:1px solid var(--bd2);border-radius:4px;color:var(--tx2);font-family:var(--mono);font-size:10px;padding:2px 7px;cursor:pointer;white-space:nowrap}
+.add-to-order:hover{background:var(--orangeT);color:#ffa657;border-color:var(--orange)}
+.in-order{background:var(--orangeT);color:#ffa657;border:1px solid #e3722b;border-radius:4px;font-family:var(--mono);font-size:10px;padding:2px 7px;white-space:nowrap}
+.empty{padding:18px;text-align:center;color:var(--tx3);font-family:var(--mono);font-size:12px}
+.inv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.inv-card{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.inv-card-hdr{padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.inv-card-title{font-family:var(--mono);font-size:12px;font-weight:500}
+.inv-item{display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--bd)}
+.inv-item:last-child{border-bottom:none}
+.inv-item-info{flex:1;min-width:0}
+.inv-item-name{font-family:var(--mono);font-size:12px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-item-sub{font-family:var(--mono);font-size:10px;color:var(--tx3);margin-top:1px}
+.inv-bar-wrap{width:80px;flex-shrink:0}
+.inv-bar-track{background:var(--bg4);border-radius:2px;height:4px;margin-bottom:3px;overflow:hidden}
+.inv-bar-fill{height:4px;border-radius:2px;transition:width .3s}
+.inv-bar-val{font-family:var(--mono);font-size:10px;text-align:right}
+.inv-qbtn{background:var(--bg3);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.inv-qbtn:hover{background:var(--bg4)}
+.inv-qval{min-width:28px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:500}
+.abtn{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--bd2);color:var(--tx2);font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.abtn:hover{background:var(--bg4);color:var(--tx)}
+.abtn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.abtn.primary:hover{opacity:.85}
+.abtn.danger{background:var(--redT);border-color:var(--red);color:#f85149}
+.cmd-split{display:grid;grid-template-columns:1fr 360px;gap:12px}
+.cmd-right{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.cmd-right-hdr{padding:9px 14px;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:12px;color:var(--tx2);display:flex;justify-content:space-between;align-items:center}
+.order-item{display:flex;align-items:center;gap:6px;padding:7px 13px;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:11px}
+.order-item:last-child{border-bottom:none}
+.order-item-name{flex:1;color:var(--tx);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order-price{color:#3fb950;min-width:58px;text-align:right;flex-shrink:0}
+.order-del{background:none;border:none;color:var(--tx3);cursor:pointer;padding:0 3px;font-size:13px}
+.order-del:hover{color:#f85149}
+.cmd-footer{padding:11px 14px;border-top:1px solid var(--bd);background:var(--bg3)}
+.total-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--tx2);margin-bottom:3px}
+.total-row.final{color:var(--tx);font-size:13px;font-weight:500;margin-top:7px;padding-top:7px;border-top:1px solid var(--bd)}
+.note-field{padding:7px 13px;border-bottom:1px solid var(--bd);background:var(--bg3)}
+.note-field input{background:transparent;border:none;outline:none;color:var(--tx);font-family:var(--mono);font-size:11px;width:100%}
+.empty-order{padding:24px;text-align:center;color:var(--tx3);font-family:var(--mono);font-size:11px}
+.modal-bg{display:none;background:rgba(1,4,9,.9);padding:16px;border-radius:10px;margin:10px 0}
+.modal-bg.open{display:block}
+.modal{background:var(--bg2);border:1px solid var(--bd2);border-radius:8px;overflow:hidden;max-width:520px;margin:0 auto}
+.modal-hdr{padding:11px 15px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:var(--mono);font-size:13px;color:var(--tx)}
+.modal-close{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1}
+.modal-close:hover{color:var(--tx)}
+.modal-body{padding:14px}
+.share-label{font-size:11px;color:var(--tx2);font-family:var(--mono);margin-bottom:5px}
+.share-box{background:var(--bg3);border:1px solid var(--bd);border-radius:5px;padding:9px 11px;font-family:var(--mono);font-size:11px;color:var(--tx);word-break:break-all;margin-bottom:11px;max-height:130px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+.share-row{display:flex;gap:7px;margin-bottom:11px}
+.share-row input{background:var(--bg3);border:1px solid var(--bd);border-radius:5px;color:var(--tx);font-family:var(--mono);font-size:11px;padding:5px 9px;flex:1;outline:none}
+.copy-btn{background:#1f6feb;border:none;color:#fff;font-family:var(--mono);font-size:11px;padding:5px 13px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.copy-btn:hover{opacity:.85}.copy-btn.copied{background:var(--green2)}
+.divider{border:none;border-top:1px solid var(--bd);margin:11px 0}
+.share-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.share-opt{background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:9px 6px;cursor:pointer;text-align:center}
+.share-opt:hover{border-color:var(--bd2);background:var(--bg4)}
+.share-opt-icon{font-size:18px;margin-bottom:3px}
+.share-opt-label{font-family:var(--mono);font-size:10px;color:var(--tx2)}
+.share-status{font-family:var(--mono);font-size:11px;color:#3fb950;text-align:center;padding:5px 0;display:none}
+@media(max-width:720px){
+  .cmd-split{grid-template-columns:1fr}
+  .inv-grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .shell{margin:8px;border-radius:8px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+  <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+  <div class="topbar-title">inventaire-alcools &mdash; bunker</div>
+  <div class="branch">main</div>
+</div>
+<div class="nav">
+  <button class="navbtn t-saq active" onclick="sw('saq',this,'t-saq')">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="#79c0ff"><path d="M5 1h6l1 4H4L5 1zM3 6h10l-1 8H4L3 6z"/></svg>
+    <span style="color:#79c0ff">saq</span>
+    <span id="saq-cnt" class="cnt" style="background:#1f6feb33;color:#79c0ff">0</span>
+  </button>
+  <button class="navbtn t-beer" onclick="sw('beer',this,'t-beer')">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="#d2a8ff"><path d="M3 2h8l1 2v9l-1 2H4l-1-2V4l1-2zM11 6h3v5h-3"/></svg>
+    <span style="color:#d2a8ff">biere</span>
+    <span id="beer-cnt" class="cnt" style="background:#8957e522;color:#d2a8ff">0</span>
+  </button>
+  <button class="navbtn t-inv" onclick="sw('inventaire',this,'t-inv')">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="#3fb950"><path d="M2 2h12v2H2zm0 4h12v2H2zm0 4h12v2H2z"/></svg>
+    <span style="color:#3fb950">inventaire</span>
+  </button>
+  <button class="navbtn t-cmd" onclick="sw('commande',this,'t-cmd')">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="#ffa657"><path d="M0 2.5A.5.5 0 01.5 2h1a.5.5 0 01.485.379L2.89 5H14.5a.5.5 0 01.491.592l-1.5 8A.5.5 0 0113 14H4a.5.5 0 01-.491-.408L1.01 3H.5A.5.5 0 010 2.5z"/></svg>
+    <span style="color:#ffa657">commande</span>
+    <span id="order-cnt" class="cnt" style="background:#e3722b22;color:#ffa657">0</span>
+  </button>
+</div>
+<div class="content">
+
+<div id="saq" class="section on">
+  <div class="metrics" id="saq-metrics"></div>
+  <div class="panel">
+    <div class="panel-hdr"><div class="panel-title">+ nouveau produit SAQ</div></div>
+    <div class="prompt-row">
+      <span class="ps-sym">$</span>
+      <input id="s-nom" placeholder="nom du produit" style="width:175px">
+      <span class="ps">/</span>
+      <select id="s-cat" style="width:108px">
+        <option>Vin rouge</option><option>Vin blanc</option><option>Vin rose</option>
+        <option>Mousseux</option><option>Whisky</option><option>Vodka</option>
+        <option>Rhum</option><option>Gin</option><option>Spiritueux</option><option>Autre</option>
+      </select>
+      <span class="ps">/</span>
+      <input id="s-fmt" placeholder="750ml" style="width:58px">
+      <span class="ps">/</span>
+      <input id="s-qte" type="number" min="0" placeholder="qte" style="width:44px">
+      <span class="ps">/</span>
+      <input id="s-seuil" type="number" min="0" placeholder="min" style="width:40px">
+      <span class="ps">/</span>
+      <input id="s-prix" type="number" min="0" step="0.01" placeholder="prix $" style="width:65px">
+      <button class="cmd-btn" onclick="addSAQ()">+ add</button>
+    </div>
+    <div class="search-bar">
+      <input id="s-search" placeholder="filter..." oninput="renderSAQ()">
+      <select id="s-filter" onchange="renderSAQ()">
+        <option value="">toutes categories</option>
+        <option>Vin rouge</option><option>Vin blanc</option><option>Vin rose</option>
+        <option>Mousseux</option><option>Whisky</option><option>Vodka</option>
+        <option>Rhum</option><option>Gin</option><option>Spiritueux</option><option>Autre</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>produit</th><th>categorie</th><th>format</th><th>quantite</th><th>prix</th><th>statut</th><th>commande</th><th></th></tr></thead>
+        <tbody id="saq-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="beer" class="section">
+  <div class="metrics" id="beer-metrics"></div>
+  <div class="panel">
+    <div class="panel-hdr"><div class="panel-title">+ nouvelle biere</div></div>
+    <div class="prompt-row">
+      <span class="ps-sym">$</span>
+      <input id="b-nom" placeholder="nom de la biere" style="width:168px">
+      <span class="ps">/</span>
+      <select id="b-type" style="width:92px">
+        <option>Lager</option><option>IPA</option><option>Pale Ale</option>
+        <option>Stout</option><option>Blanche</option><option>Rousse</option>
+        <option>Sour</option><option>Autre</option>
+      </select>
+      <span class="ps">/</span>
+      <input id="b-fmt" placeholder="341ml" style="width:58px">
+      <span class="ps">/</span>
+      <input id="b-qte" type="number" min="0" placeholder="qte" style="width:44px">
+      <span class="ps">/</span>
+      <input id="b-seuil" type="number" min="0" placeholder="min" style="width:40px">
+      <span class="ps">/</span>
+      <input id="b-prix" type="number" min="0" step="0.01" placeholder="prix $" style="width:65px">
+      <button class="cmd-btn" onclick="addBeer()">+ add</button>
+    </div>
+    <div class="search-bar">
+      <input id="b-search" placeholder="filter..." oninput="renderBeer()">
+      <select id="b-filter" onchange="renderBeer()">
+        <option value="">tous types</option>
+        <option>Lager</option><option>IPA</option><option>Pale Ale</option>
+        <option>Stout</option><option>Blanche</option><option>Rousse</option>
+        <option>Sour</option><option>Autre</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>produit</th><th>type</th><th>format</th><th>quantite</th><th>seuil</th><th>prix</th><th>statut</th><th>commande</th><th></th></tr></thead>
+        <tbody id="beer-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="inventaire" class="section">
+  <div class="metrics" id="inv-metrics"></div>
+  <div style="display:flex;gap:8px;margin-bottom:13px;flex-wrap:wrap">
+    <button class="abtn" onclick="sw('saq',document.querySelector('.navbtn'),'t-saq')">+ ajouter produit</button>
+    <button class="abtn" onclick="addLowStock();sw('commande',document.querySelectorAll('.navbtn')[3],'t-cmd')">commander stock faible</button>
+  </div>
+  <div class="inv-grid" id="inv-grid"></div>
+</div>
+
+<div id="commande" class="section">
+  <div class="cmd-split">
+    <div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-hdr">
+          <div class="panel-title">articles a commander</div>
+          <div style="display:flex;gap:6px">
+            <button class="abtn" onclick="addLowStock()">stock faible</button>
+            <button class="abtn danger" onclick="clearOrder()">vider</button>
+          </div>
+        </div>
+        <div id="order-items-left"><div class="empty-order">Aucun article - ajoutez depuis SAQ ou Biere</div></div>
+      </div>
+    </div>
+    <div class="cmd-right">
+      <div class="cmd-right-hdr">
+        <span>bon de commande</span>
+        <span id="order-date" style="color:var(--tx3);font-size:10px"></span>
+      </div>
+      <div class="note-field"><input id="order-dest" placeholder="Destinataire (SAQ Sutton, epicerie...)"></div>
+      <div id="order-preview"></div>
+      <div class="cmd-footer">
+        <div class="total-row"><span>sous-total SAQ</span><span id="t-saq">$0.00</span></div>
+        <div class="total-row"><span>sous-total biere</span><span id="t-beer">$0.00</span></div>
+        <div class="total-row final"><span>TOTAL</span><span id="t-total" style="color:#ffa657">$0.00</span></div>
+        <button class="abtn primary" style="width:100%;justify-content:center;margin-top:11px" onclick="openShare()">Partager la commande</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-bg" id="share-modal">
+    <div class="modal">
+      <div class="modal-hdr">
+        <span class="modal-title">Partager le bon de commande</span>
+        <button class="modal-close" onclick="closeShare()">x</button>
+      </div>
+      <div class="modal-body">
+        <div class="share-label">apercu</div>
+        <div class="share-box" id="share-preview"></div>
+        <div class="share-row">
+          <input id="share-link" readonly placeholder="contenu de la commande">
+          <button class="copy-btn" id="copy-btn" onclick="copyText()">Copier</button>
+        </div>
+        <hr class="divider">
+        <div class="share-label" style="margin-bottom:8px">envoyer via</div>
+        <div class="share-opts">
+          <div class="share-opt" onclick="shareEmail()"><div class="share-opt-icon">@</div><div class="share-opt-label">Courriel</div></div>
+          <div class="share-opt" onclick="shareSMS()"><div class="share-opt-icon">#</div><div class="share-opt-label">SMS</div></div>
+          <div class="share-opt" onclick="copyClipboard()"><div class="share-opt-icon">=</div><div class="share-opt-label">Copier</div></div>
+          <div class="share-opt" onclick="printOrder()"><div class="share-opt-icon">P</div><div class="share-opt-label">Imprimer</div></div>
+        </div>
+        <div class="share-status" id="share-status">Copie!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+var sD=[
+  {id:1,nom:"Chateau Margaux 2019",cat:"Vin rouge",fmt:"750ml",qte:6,seuil:3,prix:89.75},
+  {id:2,nom:"Prosecco Zonin",cat:"Mousseux",fmt:"750ml",qte:2,seuil:4,prix:18.45},
+  {id:3,nom:"Johnnie Walker Black",cat:"Whisky",fmt:"1L",qte:1,seuil:2,prix:54.00},
+  {id:4,nom:"Kendall-Jackson Chardonnay",cat:"Vin blanc",fmt:"750ml",qte:8,seuil:3,prix:24.50}
+];
+var bD=[
+  {id:1,nom:"St-Ambroise Rousse",type:"Rousse",fmt:"341ml",qte:24,seuil:12,prix:2.85},
+  {id:2,nom:"Boreale IPA",type:"IPA",fmt:"473ml",qte:4,seuil:12,prix:3.50},
+  {id:3,nom:"Budweiser",type:"Lager",fmt:"355ml",qte:0,seuil:24,prix:1.80},
+  {id:4,nom:"Unibroue Blanche de Chambly",type:"Blanche",fmt:"341ml",qte:18,seuil:6,prix:3.25}
+];
+var order=[],nS=5,nB=5;
+
+document.getElementById('order-date').textContent=new Date().toLocaleDateString('fr-CA',{year:'numeric',month:'long',day:'numeric'});
+
+function badge(q,s){
+  if(q===0)return'<span class="badge b-out">epuise</span>';
+  if(q<=s)return'<span class="badge b-low">faible</span>';
+  return'<span class="badge b-ok">ok</span>';
+}
+function inOrder(id,src){return order.find(function(x){return x.id===id&&x.src===src;});}
+function barC(q,s){return q===0?'#f85149':q<=s?'#d29922':'#3fb950';}
+function barP(q,s){return Math.round(Math.min(100,q/Math.max(s*2,q,1)*100));}
+
+function sw(id,el,cls){
+  document.querySelectorAll('.navbtn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('on');});
+  if(el){el.classList.add('active');if(cls)el.classList.add(cls);}
+  var sec=document.getElementById(id);if(sec)sec.classList.add('on');
+  if(id==='inventaire')renderInv();
+}
+
+function metrics(data,mid){
+  var out=data.filter(function(x){return x.qte===0;}).length;
+  var low=data.filter(function(x){return x.qte>0&&x.qte<=x.seuil;}).length;
+  var val=data.reduce(function(a,x){return a+x.qte*x.prix;},0);
+  document.getElementById(mid).innerHTML=
+    '<div class="metric"><div class="metric-label">produits</div><div class="metric-val cv-blue">'+data.length+'</div></div>'+
+    '<div class="metric"><div class="metric-label">stock faible</div><div class="metric-val cv-yellow">'+low+'</div></div>'+
+    '<div class="metric"><div class="metric-label">epuise</div><div class="metric-val cv-red">'+out+'</div></div>'+
+    '<div class="metric"><div class="metric-label">valeur totale</div><div class="metric-val cv-green">$'+val.toFixed(2)+'</div></div>';
+}
+
+function renderSAQ(){
+  var q=(document.getElementById('s-search')||{}).value||'';
+  var f=(document.getElementById('s-filter')||{}).value||'';
+  var items=sD.filter(function(x){return x.nom.toLowerCase().indexOf(q.toLowerCase())>=0&&(!f||x.cat===f);});
+  var tb=document.getElementById('saq-list');
+  if(!items.length){tb.innerHTML='<tr><td colspan="8" class="empty">aucun resultat</td></tr>';metrics(sD,'saq-metrics');return;}
+  tb.innerHTML=items.map(function(x){
+    var io=inOrder(x.id,'saq');
+    var obtn=io?'<span class="in-order">'+io.qteOrd+'x ok</span>':'<button class="add-to-order" onclick="addOrder('+x.id+',\'saq\')">+ cmd</button>';
+    return'<tr><td style="font-weight:500;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.nom+'</td>'+
+    '<td><span class="badge b-cat">'+x.cat+'</span></td><td style="color:var(--tx2)">'+x.fmt+'</td>'+
+    '<td><div class="qty-ctrl"><button class="qbtn" onclick="chgS('+x.id+',-1)">-</button><span class="qval">'+x.qte+'</span><button class="qbtn" onclick="chgS('+x.id+',1)">+</button></div></td>'+
+    '<td>$'+x.prix.toFixed(2)+'</td><td>'+badge(x.qte,x.seuil)+'</td><td>'+obtn+'</td>'+
+    '<td><button class="del-btn" onclick="delS('+x.id+')">x</button></td></tr>';
+  }).join('');
+  document.getElementById('saq-cnt').textContent=sD.length;
+  metrics(sD,'saq-metrics');
+}
+
+function renderBeer(){
+  var q=(document.getElementById('b-search')||{}).value||'';
+  var f=(document.getElementById('b-filter')||{}).value||'';
+  var items=bD.filter(function(x){return x.nom.toLowerCase().indexOf(q.toLowerCase())>=0&&(!f||x.type===f);});
+  var tb=document.getElementById('beer-list');
+  if(!items.length){tb.innerHTML='<tr><td colspan="9" class="empty">aucun resultat</td></tr>';metrics(bD,'beer-metrics');return;}
+  tb.innerHTML=items.map(function(x){
+    var io=inOrder(x.id,'beer');
+    var obtn=io?'<span class="in-order">'+io.qteOrd+'x ok</span>':'<button class="add-to-order" onclick="addOrder('+x.id+',\'beer\')">+ cmd</button>';
+    return'<tr><td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.nom+'</td>'+
+    '<td><span class="badge b-type">'+x.type+'</span></td><td style="color:var(--tx2)">'+x.fmt+'</td>'+
+    '<td><div class="qty-ctrl"><button class="qbtn" onclick="chgB('+x.id+',-1)">-</button><span class="qval">'+x.qte+'</span><button class="qbtn" onclick="chgB('+x.id+',1)">+</button></div></td>'+
+    '<td style="color:var(--tx2)">'+x.seuil+'</td><td>$'+x.prix.toFixed(2)+'</td><td>'+badge(x.qte,x.seuil)+'</td><td>'+obtn+'</td>'+
+    '<td><button class="del-btn" onclick="delB('+x.id+')">x</button></td></tr>';
+  }).join('');
+  document.getElementById('beer-cnt').textContent=bD.length;
+  metrics(bD,'beer-metrics');
+}
+
+function renderInv(){
+  var allVal=sD.reduce(function(a,x){return a+x.qte*x.prix;},0)+bD.reduce(function(a,x){return a+x.qte*x.prix;},0);
+  var allLow=sD.filter(function(x){return x.qte>0&&x.qte<=x.seuil;}).length+bD.filter(function(x){return x.qte>0&&x.qte<=x.seuil;}).length;
+  var allOut=sD.filter(function(x){return x.qte===0;}).length+bD.filter(function(x){return x.qte===0;}).length;
+  document.getElementById('inv-metrics').innerHTML=
+    '<div class="metric"><div class="metric-label">total produits</div><div class="metric-val cv-blue">'+(sD.length+bD.length)+'</div></div>'+
+    '<div class="metric"><div class="metric-label">stock faible</div><div class="metric-val cv-yellow">'+allLow+'</div></div>'+
+    '<div class="metric"><div class="metric-label">epuise</div><div class="metric-val cv-red">'+allOut+'</div></div>'+
+    '<div class="metric"><div class="metric-label">valeur totale</div><div class="metric-val cv-green">$'+allVal.toFixed(2)+'</div></div>';
+  function mkCard(title,data,src,clr){
+    var val=data.reduce(function(a,x){return a+x.qte*x.prix;},0);
+    var rows=data.length?data.map(function(x){
+      var bc=barC(x.qte,x.seuil),bp=barP(x.qte,x.seuil);
+      var inc=src==='saq'?'chgS('+x.id+',1)':'chgB('+x.id+',1)';
+      var dec=src==='saq'?'chgS('+x.id+',-1)':'chgB('+x.id+',-1)';
+      return'<div class="inv-item">'+
+        '<div class="inv-item-info"><div class="inv-item-name">'+x.nom+'</div>'+
+        '<div class="inv-item-sub">'+x.fmt+' min:'+x.seuil+' $'+x.prix.toFixed(2)+'</div></div>'+
+        '<div class="inv-bar-wrap"><div class="inv-bar-track"><div class="inv-bar-fill" style="width:'+bp+'%;background:'+bc+'"></div></div>'+
+        '<div class="inv-bar-val" style="color:'+bc+'">'+x.qte+' unit.</div></div>'+
+        '<div class="qty-ctrl" style="margin-left:6px">'+
+        '<button class="inv-qbtn" onclick="'+dec+';renderInv()">-</button>'+
+        '<span class="inv-qval">'+x.qte+'</span>'+
+        '<button class="inv-qbtn" onclick="'+inc+';renderInv()">+</button></div></div>';
+    }).join(''):'<div class="empty">aucun produit</div>';
+    return'<div class="inv-card"><div class="inv-card-hdr">'+
+      '<div class="inv-card-title" style="color:'+clr+'">'+title+' <span style="color:var(--tx3);font-size:10px">('+data.length+')</span></div>'+
+      '<span style="font-family:var(--mono);font-size:11px;color:var(--tx3)">$'+val.toFixed(2)+'</span></div>'+rows+'</div>';
+  }
+  document.getElementById('inv-grid').innerHTML=mkCard('SAQ',sD,'saq','#79c0ff')+mkCard('Biere',bD,'beer','#d2a8ff');
+}
+
+function renderOrder(){
+  var el=document.getElementById('order-items-left');
+  var prev=document.getElementById('order-preview');
+  document.getElementById('order-cnt').textContent=order.length;
+  if(!order.length){
+    el.innerHTML='<div class="empty-order">Aucun article</div>';
+    prev.innerHTML='<div class="empty-order" style="font-size:11px">Commande vide</div>';
+    ['t-saq','t-beer','t-total'].forEach(function(id){document.getElementById(id).textContent='$0.00';});
+    return;
+  }
+  el.innerHTML=order.map(function(o){
+    return'<div class="order-item">'+
+      '<span class="badge '+(o.src==='saq'?'b-cat':'b-type')+'" style="font-size:9px;margin-right:3px">'+o.src+'</span>'+
+      '<span class="order-item-name">'+o.nom+'</span>'+
+      '<div class="qty-ctrl" style="margin-right:6px">'+
+      '<button class="qbtn" onclick="chgOQ('+o.id+',\''+o.src+'\',-1)">-</button>'+
+      '<span class="qval">'+o.qteOrd+'</span>'+
+      '<button class="qbtn" onclick="chgOQ('+o.id+',\''+o.src+'\',1)">+</button></div>'+
+      '<span class="order-price">$'+(o.prix*o.qteOrd).toFixed(2)+'</span>'+
+      '<button class="order-del" onclick="rmOrder('+o.id+',\''+o.src+'\')">x</button></div>';
+  }).join('');
+  var tS=order.filter(function(x){return x.src==='saq';}).reduce(function(a,x){return a+x.prix*x.qteOrd;},0);
+  var tB=order.filter(function(x){return x.src==='beer';}).reduce(function(a,x){return a+x.prix*x.qteOrd;},0);
+  document.getElementById('t-saq').textContent='$'+tS.toFixed(2);
+  document.getElementById('t-beer').textContent='$'+tB.toFixed(2);
+  document.getElementById('t-total').textContent='$'+(tS+tB).toFixed(2);
+  prev.innerHTML=order.map(function(o){
+    return'<div class="order-item" style="padding:5px 13px">'+
+      '<span style="color:var(--tx2);min-width:26px;text-align:right;margin-right:7px">'+o.qteOrd+'x</span>'+
+      '<span class="order-item-name">'+o.nom+' ('+o.fmt+')</span>'+
+      '<span class="order-price">$'+(o.prix*o.qteOrd).toFixed(2)+'</span></div>';
+  }).join('');
+}
+
+function renderAll(){renderSAQ();renderBeer();renderOrder();}
+
+function addOrder(id,src){
+  if(inOrder(id,src))return;
+  var item=src==='saq'?sD.find(function(x){return x.id===id;}):bD.find(function(x){return x.id===id;});
+  if(!item)return;
+  order.push({id:id,src:src,nom:item.nom,fmt:item.fmt,prix:item.prix,cat:item.cat||item.type,qteOrd:Math.max(1,(item.seuil-item.qte)+2)});
+  renderAll();
+}
+function addLowStock(){
+  sD.filter(function(x){return x.qte<=x.seuil&&!inOrder(x.id,'saq');}).forEach(function(x){addOrder(x.id,'saq');});
+  bD.filter(function(x){return x.qte<=x.seuil&&!inOrder(x.id,'beer');}).forEach(function(x){addOrder(x.id,'beer');});
+  renderAll();
+}
+function rmOrder(id,src){order=order.filter(function(x){return!(x.id===id&&x.src===src);});renderAll();}
+function chgOQ(id,src,d){var o=inOrder(id,src);if(o)o.qteOrd=Math.max(1,o.qteOrd+d);renderOrder();}
+function clearOrder(){order=[];renderAll();}
+function addSAQ(){
+  var nom=document.getElementById('s-nom').value.trim();if(!nom)return;
+  sD.push({id:nS++,nom:nom,cat:document.getElementById('s-cat').value,
+    fmt:document.getElementById('s-fmt').value||'750ml',
+    qte:parseInt(document.getElementById('s-qte').value)||0,
+    seuil:parseInt(document.getElementById('s-seuil').value)||2,
+    prix:parseFloat(document.getElementById('s-prix').value)||0});
+  ['s-nom','s-fmt','s-qte','s-seuil','s-prix'].forEach(function(id){document.getElementById(id).value='';});
+  renderSAQ();
+}
+function addBeer(){
+  var nom=document.getElementById('b-nom').value.trim();if(!nom)return;
+  bD.push({id:nB++,nom:nom,type:document.getElementById('b-type').value,
+    fmt:document.getElementById('b-fmt').value||'341ml',
+    qte:parseInt(document.getElementById('b-qte').value)||0,
+    seuil:parseInt(document.getElementById('b-seuil').value)||6,
+    prix:parseFloat(document.getElementById('b-prix').value)||0});
+  ['b-nom','b-fmt','b-qte','b-seuil','b-prix'].forEach(function(id){document.getElementById(id).value='';});
+  renderBeer();
+}
+function chgS(id,d){var i=sD.find(function(x){return x.id===id;});if(i)i.qte=Math.max(0,i.qte+d);renderSAQ();}
+function chgB(id,d){var i=bD.find(function(x){return x.id===id;});if(i)i.qte=Math.max(0,i.qte+d);renderBeer();}
+function delS(id){sD=sD.filter(function(x){return x.id!==id;});order=order.filter(function(x){return!(x.id===id&&x.src==='saq');});renderAll();}
+function delB(id){bD=bD.filter(function(x){return x.id!==id;});order=order.filter(function(x){return!(x.id===id&&x.src==='beer');});renderAll();}
+
+function buildTxt(){
+  var dest=document.getElementById('order-dest').value||'Fournisseur';
+  var date=new Date().toLocaleDateString('fr-CA',{year:'numeric',month:'long',day:'numeric'});
+  var saq=order.filter(function(x){return x.src==='saq';});
+  var beer=order.filter(function(x){return x.src==='beer';});
+  var tS=saq.reduce(function(a,x){return a+x.prix*x.qteOrd;},0);
+  var tB=beer.reduce(function(a,x){return a+x.prix*x.qteOrd;},0);
+  var sep='------------------------------------------';
+  var t='BON DE COMMANDE -- '+date+'\nDestinataire : '+dest+'\n'+sep+'\n';
+  if(saq.length){t+='\nSAQ\n';saq.forEach(function(x){t+='  - '+x.nom+' ('+x.fmt+') -- '+x.qteOrd+' unite(s) @ $'+x.prix.toFixed(2)+' = $'+(x.prix*x.qteOrd).toFixed(2)+'\n';});t+='  Sous-total SAQ : $'+tS.toFixed(2)+'\n';}
+  if(beer.length){t+='\nBiere\n';beer.forEach(function(x){t+='  - '+x.nom+' ('+x.fmt+') -- '+x.qteOrd+' unite(s) @ $'+x.prix.toFixed(2)+' = $'+(x.prix*x.qteOrd).toFixed(2)+'\n';});t+='  Sous-total biere : $'+tB.toFixed(2)+'\n';}
+  t+='\n'+sep+'\nTOTAL : $'+(tS+tB).toFixed(2)+'\n';
+  return t;
+}
+function openShare(){
+  if(!order.length){alert('La commande est vide.');return;}
+  var txt=buildTxt();
+  document.getElementById('share-preview').textContent=txt;
+  document.getElementById('share-link').value=txt;
+  document.getElementById('share-modal').classList.add('open');
+}
+function closeShare(){document.getElementById('share-modal').classList.remove('open');}
+function copyText(){
+  navigator.clipboard.writeText(buildTxt()).then(function(){
+    var b=document.getElementById('copy-btn');b.textContent='Copie!';b.classList.add('copied');
+    setTimeout(function(){b.textContent='Copier';b.classList.remove('copied');},2200);
+  });
+}
+function copyClipboard(){
+  navigator.clipboard.writeText(buildTxt()).then(function(){
+    var s=document.getElementById('share-status');s.style.display='block';
+    setTimeout(function(){s.style.display='none';},2500);
+  });
+}
+function shareEmail(){
+  var dest=document.getElementById('order-dest').value||'';
+  window.open('mailto:'+dest+'?subject='+encodeURIComponent('Bon de commande alcools')+'&body='+encodeURIComponent(buildTxt()));
+}
+function shareSMS(){window.open('sms:?body='+encodeURIComponent(buildTxt()));}
+function printOrder(){
+  var w=window.open('','_blank','width=640,height=720');
+  w.document.write('<pre style="font-family:monospace;font-size:13px;padding:24px;line-height:1.6">'+buildTxt()+'</pre>');
+  w.document.close();w.print();
+}
+renderAll();
+</script>
+</body>
+</html>
