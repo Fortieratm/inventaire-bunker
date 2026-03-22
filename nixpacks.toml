@@ -1,5 +1,2 @@
-[phases.setup]
-nixPkgs = ["nginx"]
-
 [start]
-cmd = "cp /app/index.html /var/www/html/index.html && nginx -g 'daemon off;'"
+cmd = "python3 -m http.server 8080"
