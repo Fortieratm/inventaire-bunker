@@ -1,5 +1,2 @@
-[phases.setup]
-nixPkgs = ["caddy"]
-
 [start]
-cmd = "caddy file-server --root /app --listen :${PORT}"
+cmd = "python3 server.py"
